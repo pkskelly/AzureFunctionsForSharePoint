@@ -110,7 +110,8 @@ namespace AzureFunctionsForSharePoint.Functions
                 });
 
                 _response.StatusCode = HttpStatusCode.Moved;
-                _response.Headers.Location = new Uri($"{ctx.Web.Url}?cId={ClientId}&cKey={encodedCacheKey}");
+                // TODO: add Doug worthy validation on SPHostUrl, whatever that means
+                _response.Headers.Location = new Uri($"{ctx.Web.Url}?cId={ClientId}&cKey={encodedCacheKey}&SPHostUrl={_queryParams["SPHostUrl"]}");
 
                 return _response;
             }
@@ -283,6 +284,7 @@ namespace AzureFunctionsForSharePoint.Functions
             //It is directly available if this is an app web
             if (!IsHostWeb)
             {
+                clientContext.Web.EnsureProperty(w => w.AppInstanceId);
                 return clientContext.Web.AppInstanceId.ToString();
             }
 
@@ -309,7 +311,7 @@ namespace AzureFunctionsForSharePoint.Functions
             try
             {
                 return
-                    GetFile("AppLaunch.Resources.Error.html", Assembly.GetExecutingAssembly())
+                    GetFile("AzureFunctionsForSharePoint.Functions.Resources.Error.html", Assembly.GetExecutingAssembly())
                         .Replace("{{Exception}}", errorText).Replace("{{AppId}}", ClientId);
             }
             catch
